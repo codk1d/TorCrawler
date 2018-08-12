@@ -2,10 +2,16 @@ package torcrawler;
 
 public class TorCrawler {
 
-    public static void main(String[] args) 
+    private static void applicationInitialization()
     {
-        TorRequestHandler torRequestHandler = new TorRequestHandler();
-        torRequestHandler.pingOnionLink();
+        FileHandler.removeFile(Constants.filepath);
     }
     
+    public static void main(String[] args) {
+        applicationInitialization();
+
+        TorWebCrawler torRequestHandler = new TorWebCrawler();
+        torRequestHandler.start();
+    }
+
 }
