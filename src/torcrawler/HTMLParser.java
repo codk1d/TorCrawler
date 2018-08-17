@@ -18,7 +18,9 @@ public class HTMLParser {
     private  ArrayList<URLProperties> baseQueues;
 
     /*VARIABLES DECLARATIONS*/
-    private String currentHostURL = Constants.hostLink;
+    private URLProperties currentHostURL;
+    private DuplicationFilter duplicateFilterExternal;
+    private DuplicationFilter duplicateFilterInternal;
 
     /*INITIALIZATIONS*/
     private void initializations() {
@@ -30,8 +32,14 @@ public class HTMLParser {
         hostUrlQueues = new ArrayList<>();
         onionDataQueues = new ArrayList<>();
         baseQueues = new ArrayList<>();
+        duplicateFilterExternal = new DuplicationFilter();
+        duplicateFilterInternal = new DuplicationFilter();
+        
         onionDataQueues.add(new URLProperties(Constants.UrlTypes.base,Constants.baseLink));
-        currentHostURL = HelperMethod.extractHostURL(Constants.baseLink);
+        currentHostURL = new URLProperties(Constants.UrlTypes.base,Constants.baseLink); 
+        
+        duplicateFilterExternal.Initialize('_');
+        duplicateFilterInternal.Initialize('_');
     }
 
     HTMLParser() {
@@ -72,30 +80,42 @@ public class HTMLParser {
     
     public void add(String URLLink,Constants.UrlTypes type)
     {
-        if(currentHostURL.equals(HelperMethod.extractHostURL(URLLink)))
+        URLProperties urlProperties = new URLProperties(type,URLLink);
+        currentHostURL = urlProperties;
+
+        if(currentHostURL.hostURL.equals(HelperMethod.extractHostURL(URLLink)) && 
+           duplicateFilterInternal.urlDuplicationHandler(0,URLLink.substring(URLLink.indexOf(HelperMethod.extractHostURL(URLLink)))))
         {
             hostUrlQueues.add(new URLProperties(type,URLLink));
+            System.out.println("SHOT URL FOUND : " + URLLink);
         }
-        else if(type == Constants.UrlTypes.onion)
+        else if(duplicateFilterExternal.urlDuplicationHandler(0,HelperMethod.extractHostURL(URLLink)))
         {
-            onionQueues.add(new URLProperties(type,URLLink));
-            currentHostURL = HelperMethod.extractHostURL(URLLink);
-        }
-        else if(type == Constants.UrlTypes.base && URLLink.contains("onion"))
-        {
-            onionDataQueues.add(new URLProperties(type,URLLink));
-            currentHostURL = HelperMethod.extractHostURL(URLLink);
+            if(type == Constants.UrlTypes.onion)
+            {
+                onionDataQueues.add(urlProperties);
+                System.out.println("SHOT URL FOUND : " + URLLink);
+            }
+            else if(type == Constants.UrlTypes.base && URLLink.contains("onion"))
+            {
+                onionDataQueues.add(urlProperties);
+                System.out.println("SHOT URL FOUND : " + URLLink);
+            }
+            else
+            {
+                System.out.println("SHOT URL FOUND : " + URLLink);
+                baseQueues.add(urlProperties);
+            }
         }
         else
         {
-            baseQueues.add(new URLProperties(type,URLLink));
-            currentHostURL = HelperMethod.extractHostURL(URLLink);
+            System.out.println("REPEATED URL FOUND : " + URLLink);
         }
     }
     
     /*METHOD PARSER*/
     public void extractUrls(String HTML) throws MalformedURLException {
-                
+
         System.out.println("TOTAL LINKS : " + size());
         extractAndSaveUrlsFromTags(HTML);
         extractAndSaveUrlsFromContent(HTML);

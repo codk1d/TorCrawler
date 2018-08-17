@@ -10,6 +10,7 @@ public class URLProperties
     {
         this.URL = URL;
         this.type = type;
+        this.hostURL = HelperMethod.extractHostURL(URL);
     }
         
 }
