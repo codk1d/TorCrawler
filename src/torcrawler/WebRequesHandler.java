@@ -5,22 +5,28 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.SocketAddress;
-import java.net.URL;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-public class WebRequesHandler {
+public class WebRequesHandler
+{
 
-    public static String requestOnionConnection(String link) throws MalformedURLException, IOException {
-        
+    /*USE ONION PROXY IF ONION URL FOR FASTER REQUEST*/
+    public static String requestOnionConnection(String URLLink) throws MalformedURLException, IOException
+    {
+
         SocketAddress addr = new InetSocketAddress(Constants.proxyIP, Constants.proxyPort);
         Proxy proxy = new Proxy(Proxy.Type.SOCKS, addr);
-        Document doc = Jsoup.connect(link).proxy(proxy).get();
+        Document doc = Jsoup.connect(URLLink).proxy(proxy).get();
+        FileHandler.appendFile(URLLink, Constants.filepath);
         return doc.html();
     }
-    
-    public static String requestBaseConnection(String link) throws MalformedURLException, IOException {
-        Document doc = Jsoup.connect(link).get();
+
+    /*USE ONION PROXY IF ONION URL FOR FASTER REQUEST*/
+    public static String requestBaseConnection(String URLLink) throws MalformedURLException, IOException
+    {
+        Document doc = Jsoup.connect(URLLink).get();
+        FileHandler.appendFile(URLLink, Constants.filepath);
         return doc.html();
     }
 }
