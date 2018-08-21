@@ -9,4 +9,9 @@ public class Enumeration
         onion, base, none
     }
 
+    public enum UrlDataTypes
+    {
+        url, image, video, doc, audio
+    }
+    
 }

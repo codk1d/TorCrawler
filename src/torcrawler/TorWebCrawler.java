@@ -55,7 +55,7 @@ public class TorWebCrawler extends Thread
             catch (Exception ex)
             {
                 System.out.println("Main Thread Error : " + ex.toString() + " - STACKTRACE : ");
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }
         }
 

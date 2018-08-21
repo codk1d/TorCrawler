@@ -3,6 +3,8 @@ package torcrawler;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
@@ -66,15 +68,16 @@ public class HTMLParser
     public URLProperties fetchAndRemove()
     {
         URLProperties urlProperties = null;
-        if (hostUrlQueues.size() > 0)
-        {
-            urlProperties = hostUrlQueues.get(0);
-            hostUrlQueues.remove(0);
-        }
-        else if (onionQueues.size() > 0)
+                    
+        if (onionQueues.size() > 0)
         {
             urlProperties = onionQueues.get(0);
             onionQueues.remove(0);
+        }
+        else if (hostUrlQueues.size() > 0)
+        {
+            urlProperties = hostUrlQueues.get(0);
+            hostUrlQueues.remove(0);
         }
         else if (onionDataQueues.size() > 0)
         {
@@ -97,6 +100,7 @@ public class HTMLParser
             baseQueues.remove(0);
         }
 
+        currentHostURL = urlProperties;
         return urlProperties;
     }
 
@@ -123,9 +127,9 @@ public class HTMLParser
     SEPERATED FOR FASTER PERFORMANCE*/
     public void add(String URLLink, Enumeration.UrlTypes type, URLProperties parentNode) throws IOException
     {
+                                
         URLProperties urlProperties = new URLProperties(type, URLLink);
         urlProperties.parentNode = parentNode;
-        currentHostURL = urlProperties;
         int hostURLIndex = URLLink.indexOf(HelperMethod.extractHostURL(URLLink));
 
         if (currentHostURL.hostURL.equals(HelperMethod.extractHostURL(URLLink)) && hostURLIndex != -1
@@ -137,7 +141,7 @@ public class HTMLParser
         {
             if (type == Enumeration.UrlTypes.onion)
             {
-                onionDataQueues.add(urlProperties);
+                onionQueues.add(urlProperties);
                 parentNode.onionURLCount(1);
             }
             else if (type == Enumeration.UrlTypes.base && URLLink.contains("onion"))
@@ -149,19 +153,7 @@ public class HTMLParser
                 baseQueues.add(urlProperties);
             }
         }
-        else
-        {
-        }
-    }
-
-    /*METHOD PARSER*/
-    public void extractUrls(String HTML) throws MalformedURLException, IOException
-    {
-        System.out.println("TOTAL LINKS : " + size());
-        URLProperties parentURL = currentHostURL;
-
-        extractAndSaveUrlsFromTags(HTML, parentURL);
-        extractAndSaveUrlsFromContent(HTML, parentURL);
+             
     }
 
     /*FINDING OUT TYPES OF URL LIKE IF IMAGE-VIDEO-AUDIO OR DOCUMENT*/
@@ -175,6 +167,18 @@ public class HTMLParser
         {
             return false;
         }
+    }
+
+    /*METHOD PARSER*/
+    public void extractUrls(String HTML) throws MalformedURLException, IOException
+    {
+        URLProperties parentURL = currentHostURL;
+
+        extractAndSaveUrlsFromTags(HTML, parentURL);
+        extractAndSaveUrlsFromContent(HTML, parentURL);
+
+        System.out.println("TOTAL LINKS : " + size() + " - TITLE : " + extractTitle(HTML) + " - SUMMARY : " + extractSummary(HTML));
+
     }
 
     /*THE FOLLOWNG METHOD IS USED TO EXTRACT URLS FROM LINK OR HREF TAGS*/
@@ -217,4 +221,61 @@ public class HTMLParser
             }
         }
     }
+    
+    private String extractTitle(String HTML)
+    {
+        Document document = Jsoup.parse(HTML);
+        if(document.title().equals(""))
+        {
+            return document.select("h1").text();
+        }
+        else
+        {
+            return document.title();
+        }
+    }
+    
+    private String extractSummary(String HTML)
+    {
+        Document document = Jsoup.parse(HTML);
+        
+        String title = Constants.emptyString;
+        String description = Constants.emptyString;;
+        
+        Elements metaTags = document.getElementsByTag("meta");
+
+        for (Element metaTag : metaTags) {
+          String content = metaTag.attr("content");
+          String name = metaTag.attr("name");
+
+          if("d.description".equals(name)) {
+            description = content;
+            break;
+          }
+        }
+        
+        if(!description.equals(Constants.emptyString))
+        {
+            description = title + " " + description;
+        }
+        else
+        {
+            if(document.select("p").size()>0 && document.select("h1")!=null)
+            {
+               description = document.select("h1").text() + "  " + document.select("p").get(0).text();
+            }
+            else if(document.select("h1")!=null)
+            {
+                description = document.select("h1").text();
+            }
+        }
+
+        if(description.length() > 50)
+        {
+            description = description.substring(0,50);
+        }
+        
+        return description;
+    }
+    
 }

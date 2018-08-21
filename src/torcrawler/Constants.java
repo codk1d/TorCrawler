@@ -22,7 +22,7 @@ public class Constants
     /*Testing Variables*/
     public static String hostError = "none";
     public static String hostLink = "haxf4rall.com";
-    public static String baseLink = "https://haxf4rall.com/2016/11/06/100-working-deep-web-onion-and-dark-web-links/";
+    public static String baseLink = "https://ahmia.fi/search/?q=cruel+onion";
     public static String filepath = "extractedURL.txt";
 
 }
