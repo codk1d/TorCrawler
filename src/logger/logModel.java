@@ -1,5 +1,6 @@
 package logger;
 
+
 import java.util.ArrayList;
 
 public class logModel
