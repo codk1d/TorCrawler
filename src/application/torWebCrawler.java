@@ -1,14 +1,14 @@
 package application;
 
+import static java.lang.Thread.sleep;
 import constants.enumeration;
-import logger.log;
+import logManager.log;
 import constants.preferences;
 import constants.status;
 import constants.string;
 import crawler.crawler;
 import crawler.urlModel;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,36 +17,28 @@ public class torWebCrawler
 {
 
     /*INSTANCES DECLARATIONS PRIVATE*/
-    private final ArrayList<Thread> threadListPaused = new ArrayList<Thread>();
-    private final ArrayList<Thread> threadListRunning = new ArrayList<Thread>();
-    public crawler htmlParser;
+    private final ArrayList<Thread> pausedThreadQueue = new ArrayList<Thread>();
+    private final ArrayList<Thread> runningThreadQueue = new ArrayList<Thread>();
+
+    private crawler htmlParser;
     private int threadCount = 0;
 
     /*INITIALIZATIONS*/
-    private void initializations() throws IOException, InterruptedException
+    torWebCrawler() throws IOException, InterruptedException
     {
-        instanceInitalization();
+        initializations();
     }
 
-    private void instanceInitalization() throws IOException, InterruptedException
+    private void initializations() throws IOException, InterruptedException
     {
         crawler tempCrawler = (crawler) helperMethod.readObjectFromFile();
         if (tempCrawler == null)
         {
             htmlParser = new crawler();
         }
-        else
-        {
-            htmlParser = new crawler();
-        }
-
     }
 
-    torWebCrawler() throws IOException, InterruptedException
-    {
-        initializations();
-    }
-
+    /*CRAWLER INITIALIZATION*/
     public void initializeCrawler() throws InterruptedException, IOException
     {
         while (threadCount < preferences.maxThreadCount)
@@ -59,12 +51,40 @@ public class torWebCrawler
 
     }
 
+    /*CRAWLER HELPER METHODS*/
     public void stopAllThread()
     {
-        while (!threadListRunning.isEmpty())
+        while (!runningThreadQueue.isEmpty())
         {
-            threadListRunning.get(0).stop();
-            threadListRunning.remove(0);
+            runningThreadQueue.get(0).stop();
+            runningThreadQueue.remove(0);
+        }
+    }
+
+    public void pauseThread(Thread thread)
+    {
+        runningThreadQueue.remove(thread);
+        pausedThreadQueue.add(thread);
+    }
+
+    /*GETTER METHODS*/
+    public crawler getHtmlParser()
+    {
+        return htmlParser;
+    }
+
+    public void threadInitialization()
+    {
+        /*Thread Initialization*/
+        int count = 0;
+        while (count < runningThreadQueue.size())
+        {
+            if (!runningThreadQueue.get(count).isAlive())
+            {
+                runningThreadQueue.get(count).start();
+                count = 0;
+            }
+            count++;
         }
     }
 
@@ -73,40 +93,26 @@ public class torWebCrawler
         new Thread()
         {
             @Override
-            synchronized public void run()
+            public void run()
             {
-                /*Thread Initialization*/
-                int count = 0;
-                while (count < threadListRunning.size())
-                {
-                    if (!threadListRunning.get(count).isAlive())
-                    {
-                        threadListRunning.get(count).start();
-                        count = 0;
-                    }
-                    count++;
-                }
-
+                threadInitialization();
                 /*Thread Scheduler*/
-                int threadIndex = 0;
                 while (true)
                 {
                     try
                     {
-                        if (threadListPaused.size() > 0
-                                && status.appStatus == enumeration.appStatus.running
-                                && htmlParser.size() > 0)
+                        if (pausedThreadQueue.size() > 0 && status.appStatus == enumeration.appStatus.running && htmlParser.size() > 0)
                         {
-                            Thread thread = threadListPaused.get(0);
+                            Thread thread = pausedThreadQueue.get(0);
                             synchronized (thread)
                             {
-                                threadListPaused.remove(thread);
-                                threadListRunning.add(thread);
+                                pausedThreadQueue.remove(thread);
+                                runningThreadQueue.add(thread);
                                 thread.notify();
                             }
                         }
-                        log.updateThreadCount(threadListPaused.size(), threadListRunning.size());
-                        sleep(100);
+                        log.logThreadCount(runningThreadQueue.size());
+                        sleep(1000);
                     }
                     catch (InterruptedException ex)
                     {
@@ -115,12 +121,6 @@ public class torWebCrawler
                 }
             }
         }.start();
-    }
-
-    public synchronized void pauseThreadDataSave(Thread thread)
-    {
-        threadListRunning.remove(thread);
-        threadListPaused.add(thread);
     }
 
     public void createCrawler() throws IOException, InterruptedException
@@ -141,34 +141,36 @@ public class torWebCrawler
                     {
                         if (status.appStatus == enumeration.appStatus.running)
                         {
-                            if (!htmlParser.isHostEmpty(host) && !host.equals(""))
+                            if (!htmlParser.isHostEmpty(host))
                             {
                                 urlmodel = htmlParser.getUrl(host);
                                 url = urlmodel.getURL();
-                                log.saveRequest(threadName + " : URL REQUEST", url);
+                                log.logMessage(threadName + " : URL REQUEST", url, enumeration.logType.request);
                                 String html = webRequestHandler.getInstance().requestConnection(url);
                                 htmlParser.parse_html(html, url);
                             }
                             else
                             {
                                 host = htmlParser.getKey();
-                                continue;
                             }
                         }
 
-                        pauseThreadDataSave(this);
-                        wait();
+                        if (htmlParser.isHostEmpty(host))
+                        {
+                            pauseThread(this);
+                            wait();
+                        }
                     }
                     catch (Exception ex)
                     {
                         //log.print("Error : " , ex);
                         if (urlmodel != null)
                         {
-                            log.saveError("Server Error", ex.toString() + "<br> &nbsp &nbsp &nbsp &nbsp Parent URL:" + urlmodel.getParentURL() + "<br> &nbsp &nbsp &nbsp &nbsp Complete URL : " + url);
+                            log.logMessage("Server Error", ex.toString() + "<br> &nbsp &nbsp &nbsp &nbsp Parent URL:" + urlmodel.getParentURL() + "<br> &nbsp &nbsp &nbsp &nbsp Complete URL : " + url, enumeration.logType.error);
                         }
                         else
                         {
-                            log.saveError("Server Error", ex.toString() + "<br> &nbsp &nbsp &nbsp &nbsp Host:" + host + "<br> &nbsp &nbsp &nbsp &nbsp Complete URL : " + url);
+                            log.logMessage("Server Error", ex.toString() + "<br> &nbsp &nbsp &nbsp &nbsp Host:" + host + "<br> &nbsp &nbsp &nbsp &nbsp Complete URL : " + url, enumeration.logType.warning);
                         }
                     }
 
@@ -176,6 +178,6 @@ public class torWebCrawler
 
             }
         };
-        threadListRunning.add(thread);
+        runningThreadQueue.add(thread);
     }
 }

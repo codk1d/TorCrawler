@@ -8,7 +8,6 @@ import constants.enumeration;
 import org.apache.commons.io.FilenameUtils;
 import static crawler.nlpParser.extractTitle;
 import application.webRequestHandler;
-import logger.log;
 
 public class crawler
 {
@@ -44,7 +43,10 @@ public class crawler
 
     public String getKey() throws InterruptedException
     {
-        return queryManager.getKey();
+        synchronized (this)
+        {
+            return queryManager.getKey();
+        }
     }
 
     public boolean isHostEmpty(String host) throws InterruptedException
@@ -52,58 +54,56 @@ public class crawler
         return queryManager.isHostEmpty(host);
     }
 
-    public boolean isUrlPresent()
-    {
-        return queryManager.isUrlPresent();
-    }
-
-    public void saveUrl(String content) throws Exception
-    {
-        webRequestHandler.getInstance().updateCache(content);
-    }
-
     /*METHOD PARSER*/
     public void parse_html(String HTML, String Url) throws MalformedURLException, IOException, URISyntaxException, Exception
     {
         ArrayList<String> urlList = nlpParser.extractAndSaveUrlsFromContent(HTML, Url);
         String keyWords = nlpParser.extractKeyWords(HTML);
-        saveExtractedUrl(urlList, HTML,Url);
-        initializeCurrentUrl(HTML, Url, keyWords);
+        saveExtractedUrl(urlList, HTML, Url);
+        saveCurrentUrl(HTML, Url, keyWords);
     }
 
-    public void initializeCurrentUrl(String HTML, String Url, String keywords) throws Exception
+    public void saveCurrentUrl(String HTML, String Url, String keywords) throws Exception
     {
-        String summary = nlpParser.extractSummary(HTML).replace("'", "");//extractSummary(HTML);
+        String summary = nlpParser.extractSummary(HTML).replace("'", "");
         String content = urlHelperMethod.createCacheUrl(Url, extractTitle(HTML), summary, enumeration.UrlDataTypes.all.toString(), keywords);
-        saveUrl(content);
+        saveUrlToServer(content);
     }
 
-    public void saveExtractedUrl(ArrayList<String> urlList, String html,String parentURL) throws Exception
+    public void saveUrlToServer(String content) throws Exception
     {
-        for (int e = 0; e < urlList.size(); e++)
-        {
-            String URLLink = urlList.get(e);
-            String linkType = urlHelperMethod.getUrlExtension(URLLink);
-            enumeration.UrlTypes urlType = urlHelperMethod.getNetworkType(URLLink);
+        webRequestHandler.getInstance().updateCache(content);
+    }
 
-            if (urlHelperMethod.isUrlValid(URLLink) && duplicateFilter.is_url_duplicate(0, URLLink))
+    public void saveExtractedUrl(ArrayList<String> urlList, String html, String parentURL) throws Exception
+    {
+        synchronized (crawler.this)
+        {
+            for (int e = 0; e < urlList.size(); e++)
             {
-                if (linkType.equals("link"))
+                String URLLink = urlList.get(e);
+                String linkType = urlHelperMethod.getUrlExtension(URLLink);
+                enumeration.UrlTypes urlType = urlHelperMethod.getNetworkType(URLLink);
+
+                if (urlHelperMethod.isUrlValid(URLLink) && duplicateFilter.is_url_duplicate(0, URLLink))
                 {
-                    if(URLLink.contains("www.example.org<"))
+                    if (linkType.equals("link"))
                     {
-                        System.out.print("ERROR : " + parentURL + "_____"+URLLink);
+                        if (URLLink.contains("www.example.org<"))
+                        {
+                            System.out.print("ERROR : " + parentURL + "_____" + URLLink);
+                        }
+                        if (!URLLink.contains("http"))
+                        {
+                            URLLink = "https://" + URLLink;
+                        }
+                        queryManager.setUrl(URLLink, parentURL);
                     }
-                    if(!URLLink.contains("http"))
+                    else
                     {
-                        URLLink = "https://"+URLLink;
+                        String content = urlHelperMethod.createDLink(URLLink, FilenameUtils.getName(URLLink), urlHelperMethod.getUrlExtension(URLLink));
+                        saveUrlToServer(content);
                     }
-                    queryManager.setUrl(URLLink,parentURL);
-                }
-                else
-                {
-                    String content = urlHelperMethod.createDLink(URLLink, FilenameUtils.getName(URLLink), urlHelperMethod.getUrlExtension(URLLink));
-                    saveUrl(content);
                 }
             }
         }

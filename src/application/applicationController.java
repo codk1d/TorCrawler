@@ -1,9 +1,9 @@
 package application;
 
-import logger.log;
+import logManager.logViewController;
+import logManager.log;
 import constants.preferences;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,33 +13,7 @@ public class applicationController
 {
 
     public static torWebCrawler torRequestHandler = null;
-    public static crawlerManager crawlerUI;
-
-    private static void initialization() throws IOException
-    {
-        applicationInitialization();
-    }
-
-    public static void openUI() throws ParseException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
-    {
-        crawlerUI = new crawlerManager();
-        crawlerUI.run();
-        crawlerUI.crawlerObject = torRequestHandler.htmlParser;
-
-    }
-
-    /*APPLICATION GLOBAL INITIALIZATION*/
-    private static void applicationInitialization() throws IOException
-    {
-        fileHandler.removeFile(preferences.filepath_url);
-        fileHandler.removeFile(preferences.filepath_dlink);
-        helperMethod.removeTorInstances();
-    }
-
-    public static void stopAllThread()
-    {
-        torRequestHandler.stopAllThread();
-    }
+    public static logViewController crawlerUI;
 
     /*TRIGGER CRAWLER*/
     public static void main(String[] args) throws InterruptedException, IOException, InstantiationException, InstantiationException, ParseException, ClassNotFoundException, IllegalAccessException, IllegalAccessException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException
@@ -62,6 +36,31 @@ public class applicationController
         {
             Logger.getLogger(applicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private static void initialization() throws IOException
+    {
+        applicationInitialization();
+    }
+
+    /*APPLICATION GLOBAL INITIALIZATION*/
+    private static void applicationInitialization() throws IOException
+    {
+        fileHandler.removeFile(preferences.filepath_url);
+        fileHandler.removeFile(preferences.filepath_dlink);
+        helperMethod.removeTorInstances();
+    }
+
+    public static void stopAllThread()
+    {
+        torRequestHandler.stopAllThread();
+    }
+
+    public static void openUI() throws ParseException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
+    {
+        crawlerUI = new logViewController();
+        crawlerUI.run();
+        crawlerUI.crawlerObject = torRequestHandler.getHtmlParser();
     }
 
 }

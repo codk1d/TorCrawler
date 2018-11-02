@@ -2,8 +2,8 @@ package crawler;
 
 public class urlModel
 {
-    private String parentURL;
-    private String URL;
+    private final String parentURL;
+    private final String URL;
     
     public urlModel(String parentURL,String URL)
     {

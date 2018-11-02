@@ -57,50 +57,38 @@ public class nlpParser
         InputStream is = new FileInputStream("en-parser-chunking.bin");
         ParserModel model = new ParserModel(is);
         Parser parser = ParserFactory.create(model);
-        Parse topParses[] = ParserTool.parseLine(doc, parser, 1);
-        //for (Parse p : topParses)
-        //{
-        //p.show();
-        //getNounPhrases(p);
-        //}
-
+        Parse topParses[];
+        topParses = ParserTool.parseLine(doc, parser, 1);
         return keyWords;
     }
 
     /*THE FOLLOWNG URL FOUNDS URL EMBEDED IN TEXT OR CONTENT OF PAGE*/
     public static ArrayList<String> extractAndSaveUrlsFromContent(String HTML, String host) throws MalformedURLException, IOException, URISyntaxException, Exception
     {
-        Document doc = Jsoup.connect("http://jsoup.org").get();
+        Document doc = Jsoup.connect(host).get();
         ArrayList<String> urlListFiltered = new ArrayList<String>();
 
         Elements links = doc.select("a[href]");
 
         for (Element link : links)
         {
-            urlListFiltered.add(link.absUrl("href"));
+            String URLLink = link.absUrl("href");
+            if (urlHelperMethod.isUrlValid(URLLink))
+            {
+                urlListFiltered.add(URLLink);
+            }
+            if (URLLink.length() > 1 && URLLink.charAt(0) == '/' && URLLink.charAt(1) == '/')
+            {
+                URLLink = "http://" + URLLink.substring(2);
+            }
+            urlListFiltered.add(URLLink);
         }
-        
-        /*
-        String html = HTML;
-        html = html.replaceAll("<br>", " ");
-        html = html.replaceAll("\n", " ");
-        html = html.replaceAll("src=", " ");
-        html = html.replaceAll("	", " ");
-        html = html.replaceAll(">", " ");
-        html = html.replaceAll("<", " ");
-        html = html.replaceAll(";", " ");
-        html = html.replaceAll("[()]", " ");
-        html = html.replaceAll("\"", " ");
-        html = html.replaceAll("\\\\", "");
-        html = html.replaceAll("'", " ");
-        html = html.trim().replaceAll(" +", " ");
+
+        String html = doc.body().text();
         String[] urlList = html.split(" ");
-        ArrayList<String> urlListFiltered = new ArrayList<String>();
 
-        for (int e = 0; e < urlList.length; e++)
+        for (String URLLink : urlList)
         {
-            String URLLink = urlList[e];
-
             if (URLLink.length() > 1 && URLLink.charAt(0) == '/' && URLLink.charAt(1) == '/')
             {
                 URLLink = "http://" + URLLink.substring(2);
@@ -111,7 +99,7 @@ public class nlpParser
                 urlListFiltered.add(URLLink);
             }
         }
-         */
+
         return urlListFiltered;
     }
 
@@ -139,7 +127,7 @@ public class nlpParser
         Document document = Jsoup.parse(HTML);
 
         String title = string.emptyString;
-        String description = string.emptyString;;
+        String description = string.emptyString;
 
         Elements metaTags = document.getElementsByTag("meta");
 

@@ -13,11 +13,12 @@ import java.util.regex.Pattern;
 
 public class urlHelperMethod
 {
+
     /*CHECK TYPE OF URL ONION OR BASEURL OR SAME HOST URL*/
     public static enumeration.UrlTypes getNetworkType(String URLLink)
     {
         String hostURL = getUrlHost(URLLink);
-        if (hostURL.contains(".onion"))
+        if (hostURL.contains(string.typeOnion))
         {
             return enumeration.UrlTypes.onion;
         }
@@ -30,14 +31,15 @@ public class urlHelperMethod
             return enumeration.UrlTypes.none;
         }
     }
-    
+
     public static boolean isUrlValid(String url)
     {
-    try {
-        new URL(url);
+        try
+        {
+            new URL(url);
             return true;
         }
-        catch (Exception e)
+        catch (MalformedURLException e)
         {
             return false;
         }
@@ -50,19 +52,19 @@ public class urlHelperMethod
             Pattern pattern = Pattern.compile(string.urlHostMacherRegex);
             Matcher matcher = pattern.matcher(URLLink);
             matcher.find();
-            String protocol = matcher.group(1);            
-            String domain   = matcher.group(2);
-            return protocol+domain;
+            String protocol = matcher.group(1);
+            String domain = matcher.group(2);
+            return protocol + domain;
         }
         catch (Exception ex)
         {
             return "";
         }
     }
-    
+
     public static String getSubUrl(String URLLink)
     {
-        return URLLink.replace(getUrlHost(URLLink),"");
+        return URLLink.replace(getUrlHost(URLLink), "");
     }
 
     public static String getUrlExtension(String URLLink)
@@ -100,7 +102,7 @@ public class urlHelperMethod
 
         return query;
     }
-    
+
     public static String createDLink(String URL, String Title, String datatype) throws IOException, MalformedURLException, URISyntaxException
     {
         if (datatype.equals(""))
@@ -113,7 +115,7 @@ public class urlHelperMethod
         }
 
         String query = "http://localhost/BoogleSearch/public/update_cache?url=" + URL + "&title=" + Title + "&type=" + preferences.networkType.toLowerCase() + "&n_type=" + preferences.networkType + "&s_type=" + datatype + "&live_date=" + helperMethod.getCurrentDate() + "&update_date=" + helperMethod.getCurrentDate();
-        
+
         return query;
     }
 

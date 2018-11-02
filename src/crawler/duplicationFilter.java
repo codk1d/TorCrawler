@@ -7,7 +7,7 @@ public class duplicationFilter
 {
 
     /*PRIVATE VARIABLES*/
-    private Map<String, duplicationFilter> child = new HashMap<String, duplicationFilter>();
+    private final Map<String, duplicationFilter> child = new HashMap<String, duplicationFilter>();
 
     public duplicationFilter()
     {

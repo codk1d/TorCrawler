@@ -4,13 +4,15 @@ public class preferences
 {
     /*Crawler Preferences*/
     public static int proxyPort = 9150;
-    public static boolean useTorFromOS = true;
-    public static int maxThreadCount = 100;
+    public static int maxThreadCount = 1000;
     public static int requestTimeGap = 100;
     public static int requestErrorTimeGap = 20000;
     public static int maxUrlDepth = 3;
     public static int socketTimeOutInterval = 20000;
     public static int retryCount = 10;
+
+    public static boolean useTorFromOS = true;
+
     public static String networkType = "Onion";
 
     /*Session Preferences*/

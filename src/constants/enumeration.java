@@ -19,4 +19,9 @@ public class enumeration
         paused, start, running, restart
     }
 
+    public enum logType
+    {
+        error, warning, request, urlFound
+    }
+
 }

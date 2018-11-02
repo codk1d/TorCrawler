@@ -1,8 +1,9 @@
 package application;
 
+import constants.enumeration.logType;
 import constants.preferences;
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
@@ -13,6 +14,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.text.Position;
 
 public class helperMethod
 {
@@ -34,12 +36,13 @@ public class helperMethod
         return date.toString();
     }
 
-    public static void centreWindow(Window frame)
+    public static Point centreDimension(int frameWidth,int frameHeight)
     {
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
-        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2)-12;
-        frame.setLocation(x, y);
+        Point position = new Point();
+        position.x = (int) ((dimension.getWidth() - frameWidth) / 2);
+        position.y = (int) ((dimension.getHeight() - frameHeight) / 2) - 12;
+        return position;
     }
 
     public static void writeObjectToFile(Object serObj)
@@ -47,12 +50,13 @@ public class helperMethod
         try
         {
             FileOutputStream fileOut = new FileOutputStream(preferences.filepath_queue_manager);
-            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+            ObjectOutputStream objectOut;
+            objectOut = new ObjectOutputStream(fileOut);
             objectOut.writeObject(serObj);
             objectOut.close();
 
         }
-        catch (Exception ex)
+        catch (IOException ex)
         {
             ex.printStackTrace();
         }
@@ -63,12 +67,13 @@ public class helperMethod
 
         try
         {
-            if(!new File(preferences.filepath_queue_manager).exists())
+            if (!new File(preferences.filepath_queue_manager).exists())
             {
                 return null;
             }
             FileInputStream fileIn = new FileInputStream(preferences.filepath_queue_manager);
-            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+            ObjectInputStream objectIn;
+            objectIn = new ObjectInputStream(fileIn);
 
             Object obj = objectIn.readObject();
 
@@ -76,10 +81,23 @@ public class helperMethod
             return obj;
 
         }
-        catch (Exception ex)
+        catch (IOException | ClassNotFoundException ex)
         {
             ex.printStackTrace();
             return null;
         }
     }
+
+    public static logType getErrorMessageType(String errorMessage)
+    {
+        if (errorMessage.contains("java.io.FileNotFoundException"))
+        {
+            return logType.warning;
+        }
+        else
+        {
+            return logType.error;
+        }
+    }
+
 }
