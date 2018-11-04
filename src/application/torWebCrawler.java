@@ -10,6 +10,7 @@ import crawler.crawler;
 import crawler.urlModel;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +20,7 @@ public class torWebCrawler
     /*INSTANCES DECLARATIONS PRIVATE*/
     private final ArrayList<Thread> pausedThreadQueue = new ArrayList<Thread>();
     private final ArrayList<Thread> runningThreadQueue = new ArrayList<Thread>();
+    private ReentrantLock lock = new ReentrantLock();
 
     private crawler htmlParser;
     private int threadCount = 0;
@@ -151,13 +153,29 @@ public class torWebCrawler
                             }
                             else
                             {
-                                host = htmlParser.getKey();
+                                lock.lock();
+                                try
+                                {
+                                    host = htmlParser.getKey();
+                                }
+                                finally
+                                {
+                                    lock.unlock();
+                                }
                             }
                         }
 
-                        if (htmlParser.isHostEmpty(host))
+                        if (htmlParser.isHostEmpty(host) || status.appStatus == enumeration.appStatus.paused)
                         {
-                            pauseThread(this);
+                            lock.lock();
+                            try
+                            {
+                                pauseThread(this);
+                            }
+                            finally
+                            {
+                                lock.unlock();
+                            }
                             wait();
                         }
                     }

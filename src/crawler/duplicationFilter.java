@@ -12,7 +12,7 @@ public class duplicationFilter
     public duplicationFilter()
     {
     }
-    
+
     /*INITIALIZATION*/
     public void Initialize()
     {

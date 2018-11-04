@@ -53,6 +53,18 @@ public class queueManager
     {
         return parsingQueues.size() + onionQueues.size() + onionDataQueues.size() + baseQueues.size();
     }
+    
+    public void clearQueues()
+    {
+        onionQueues.clear();
+        onionDataQueues.clear();
+        baseQueues.clear();
+        parsingQueues.clear();
+        onionQueuesKeys.clear();
+        onionDataQueuesKeys.clear();
+        baseQueuesKeys.clear();
+    }
+
 
     public boolean isUrlPresent()
     {
@@ -140,12 +152,14 @@ public class queueManager
         subUrl = subUrl + " ";
         if (priorityQueue.containsKey(host))
         {
+            priorityQueue.get(host).clear();
             priorityQueue.get(host).add(new urlModel(parentURL,subUrl));
         }
         else
         {
             if (parsingQueues.containsKey(host))
             {
+                parsingQueues.get(host).clear();
                 parsingQueues.get(host).add(new urlModel(parentURL,subUrl));
             }
             else

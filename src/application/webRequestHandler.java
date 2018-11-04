@@ -29,8 +29,8 @@ public class webRequestHandler
     }
 
     /*Private Variable*/
-    public ArrayList<HttpURLConnection> connectionList = new ArrayList<HttpURLConnection>();
-    ReentrantLock lock = new ReentrantLock();
+    private ArrayList<HttpURLConnection> connectionList = new ArrayList<HttpURLConnection>();
+    private ReentrantLock lock = new ReentrantLock();
 
     public String requestConnection(String url) throws MalformedURLException, IOException, Exception
     {
@@ -50,12 +50,13 @@ public class webRequestHandler
         System.setProperty("http.agent", "Chrome");
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        connectionList.add(con);
+        //connectionList.add(con);
         String html = getContent(con, "Base");
         if (!html.contains(".onion") && status.onionFilterStatus)
         {
             throw new Exception("URL is not in onion cluster network");
         }
+        //connectionList.remove(con);
         return html;
     }
 
@@ -68,8 +69,11 @@ public class webRequestHandler
 
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection(proxy);
-        connectionList.add(con);
-        return getContent(con, "Onion");
+        //connectionList.add(con);
+        String content = getContent(con, "Onion");
+        //connectionList.remove(con);
+
+        return content;
     }
 
     public void removeAllRequests()
@@ -91,15 +95,13 @@ public class webRequestHandler
         {
             scanner.useDelimiter("\\A");
             String content = "";
-
             while (scanner.hasNextLine())
             {
-                content = content + scanner.nextLine();
+                content += scanner.nextLine();
             }
 
             log.logMessage(networkType + " URL FOUND", conn.getURL().getHost() + conn.getURL().getPath(), logType.urlFound);
             log.print("URL FOUND : " + conn.getURL());
-            connectionList.remove(conn);
             return content;
         }
         finally
@@ -117,7 +119,7 @@ public class webRequestHandler
             url = url.replaceAll(" ", "%20");
             URL obj = new URL(url);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            connectionList.add(con);
+            //connectionList.add(con);
             con.setRequestMethod("GET");
 
             int responseCode = con.getResponseCode();
@@ -125,7 +127,7 @@ public class webRequestHandler
             {
                 log.logMessage("Cache Error\n" + url, "Server returned response code " + responseCode + " ", logType.error);
             }
-            connectionList.remove(con);
+            //connectionList.remove(con);
         }
     }
 }

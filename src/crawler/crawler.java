@@ -8,15 +8,17 @@ import constants.enumeration;
 import org.apache.commons.io.FilenameUtils;
 import static crawler.nlpParser.extractTitle;
 import application.webRequestHandler;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class crawler
 {
 
     /*URL QUEUES*/
-    private queueManager queryManager;
+    public queueManager queryManager;
 
     /*VARIABLES DECLARATIONS*/
-    private duplicationFilter duplicateFilter;
+    public duplicationFilter duplicateFilter;
+    public ReentrantLock lock = new ReentrantLock();
 
     /*INITIALIZATIONS*/
     public crawler() throws IOException
@@ -29,6 +31,11 @@ public class crawler
         return queryManager.size();
     }
 
+    public void clearQueues()
+    {
+        queryManager.clearQueues();
+    }
+    
     private void variable_initalization() throws IOException
     {
         queryManager = new queueManager();
@@ -57,10 +64,19 @@ public class crawler
     /*METHOD PARSER*/
     public void parse_html(String HTML, String Url) throws MalformedURLException, IOException, URISyntaxException, Exception
     {
-        ArrayList<String> urlList = nlpParser.extractAndSaveUrlsFromContent(HTML, Url);
-        String keyWords = nlpParser.extractKeyWords(HTML);
-        saveExtractedUrl(urlList, HTML, Url);
-        saveCurrentUrl(HTML, Url, keyWords);
+        ArrayList<String> urlList = null;
+        lock.lock();
+        try
+        {
+            urlList = nlpParser.extractAndSaveUrlsFromContent(HTML, Url);
+            String keyWords = nlpParser.extractKeyWords(HTML);
+            saveExtractedUrl(urlList, HTML, Url);
+            saveCurrentUrl(HTML, Url, keyWords);
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     public void saveCurrentUrl(String HTML, String Url, String keywords) throws Exception
@@ -77,33 +93,30 @@ public class crawler
 
     public void saveExtractedUrl(ArrayList<String> urlList, String html, String parentURL) throws Exception
     {
-        synchronized (crawler.this)
+        for (int e = 0; e < urlList.size(); e++)
         {
-            for (int e = 0; e < urlList.size(); e++)
-            {
-                String URLLink = urlList.get(e);
-                String linkType = urlHelperMethod.getUrlExtension(URLLink);
-                enumeration.UrlTypes urlType = urlHelperMethod.getNetworkType(URLLink);
+            String URLLink = urlList.get(e);
+            String linkType = urlHelperMethod.getUrlExtension(URLLink);
+            enumeration.UrlTypes urlType = urlHelperMethod.getNetworkType(URLLink);
 
-                if (urlHelperMethod.isUrlValid(URLLink) && duplicateFilter.is_url_duplicate(0, URLLink))
+            if (urlHelperMethod.isUrlValid(URLLink) && duplicateFilter.is_url_duplicate(0, URLLink))
+            {
+                if (linkType.equals("link"))
                 {
-                    if (linkType.equals("link"))
+                    if (URLLink.contains("www.example.org<"))
                     {
-                        if (URLLink.contains("www.example.org<"))
-                        {
-                            System.out.print("ERROR : " + parentURL + "_____" + URLLink);
-                        }
-                        if (!URLLink.contains("http"))
-                        {
-                            URLLink = "https://" + URLLink;
-                        }
-                        queryManager.setUrl(URLLink, parentURL);
+                        System.out.print("ERROR : " + parentURL + "_____" + URLLink);
                     }
-                    else
+                    if (!URLLink.contains("http"))
                     {
-                        String content = urlHelperMethod.createDLink(URLLink, FilenameUtils.getName(URLLink), urlHelperMethod.getUrlExtension(URLLink));
-                        saveUrlToServer(content);
+                        URLLink = "https://" + URLLink;
                     }
+                    queryManager.setUrl(URLLink, parentURL);
+                }
+                else
+                {
+                    String content = urlHelperMethod.createDLink(URLLink, FilenameUtils.getName(URLLink), urlHelperMethod.getUrlExtension(URLLink));
+                    saveUrlToServer(content);
                 }
             }
         }

@@ -675,6 +675,7 @@ public class logViewController extends javax.swing.JFrame
             {
                 initializeTheme();
                 logViewController crawler = new logViewController();
+                crawler.crawlerObject = crawlerObject;
                 crawler.setVisible(true);
                 Point point = helperMethod.centreDimension(crawler.getSize().width,crawler.getSize().height);
                 crawler.setLocation(point);

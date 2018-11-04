@@ -18,6 +18,7 @@ public class applicationController
     /*TRIGGER CRAWLER*/
     public static void main(String[] args) throws InterruptedException, IOException, InstantiationException, InstantiationException, ParseException, ClassNotFoundException, IllegalAccessException, IllegalAccessException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException
     {
+
         try
         {
             if (torRequestHandler == null)
@@ -59,8 +60,8 @@ public class applicationController
     public static void openUI() throws ParseException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
     {
         crawlerUI = new logViewController();
-        crawlerUI.run();
         crawlerUI.crawlerObject = torRequestHandler.getHtmlParser();
+        crawlerUI.run();
     }
 
 }

@@ -60,6 +60,7 @@ public class logEvents
         view.jServerErrorPane.setText("");
         view.jUrlFoundPane.setText("");
         view.jWarningPane.setText("");
+        view.crawlerObject.clearQueues();
     }
     
     public void onUpdateLogs()

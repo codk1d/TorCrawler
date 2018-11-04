@@ -25,7 +25,7 @@ public class log
     /*Log Exceptions Errors and Warnings*/
     public static void logMessage(String message,String messageType,logType logType)
     {
-        logController.getInstance().logMessage(messageType, message,logType);
+       logController.getInstance().logMessage(messageType, message,logType);
     }
     
     public static void logThreadCount(int threadCount)

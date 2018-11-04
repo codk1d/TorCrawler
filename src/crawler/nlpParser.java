@@ -19,6 +19,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import constants.string;
 import java.util.ArrayList;
+import logManager.log;
 
 public class nlpParser
 {
@@ -83,7 +84,7 @@ public class nlpParser
             }
             urlListFiltered.add(URLLink);
         }
-
+        
         String html = doc.body().text();
         String[] urlList = html.split(" ");
 
@@ -99,7 +100,7 @@ public class nlpParser
                 urlListFiltered.add(URLLink);
             }
         }
-
+        
         return urlListFiltered;
     }
 
