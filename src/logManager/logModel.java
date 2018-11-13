@@ -2,12 +2,14 @@ package logManager;
 
 import constants.preferences;
 import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class logModel
 {
 
     /*Shared Instance*/
     private static final logModel sharedInstance = new logModel();
+    private ReentrantLock lock = new ReentrantLock();
 
     /*Queue Initialization*/
     private final ArrayList<logMessageModel> errorDataQueue = new ArrayList<logMessageModel>();
@@ -51,9 +53,22 @@ public class logModel
 
     public logMessageModel logErrorModel()
     {
-        logMessageModel model = sharedInstance.errorDataQueue.get(0);
-        sharedInstance.errorDataQueue.remove(0);
-        return model;
+        lock.lock();
+        try
+        {
+            logMessageModel model = sharedInstance.errorDataQueue.get(0);
+            sharedInstance.errorDataQueue.remove(0);
+            return model;
+        }
+        catch(Exception e)
+        {
+            log.print("fuck");
+            return null;
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     public void setThreadCount(int runningThread)
@@ -64,32 +79,83 @@ public class logModel
     /*Getter Methods*/
     public logMessageModel getRequestModel()
     {
-        logMessageModel model = sharedInstance.requestDataQueue.get(0);
-        sharedInstance.requestDataQueue.remove(0);
-        return model;
+        lock.lock();
+        try
+        {
+            logMessageModel model = sharedInstance.requestDataQueue.get(0);
+            sharedInstance.requestDataQueue.remove(0);
+            return model;
+        }
+        catch(Exception e)
+        {
+            log.print("fuck");
+            return null;
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     public logMessageModel getFoundURLModel()
     {
-        logMessageModel model = sharedInstance.foundURLDataQueue.get(0);
-        sharedInstance.foundURLDataQueue.remove(0);
-        return model;
+        lock.lock();
+        try
+        {
+            logMessageModel model = sharedInstance.foundURLDataQueue.get(0);
+            sharedInstance.foundURLDataQueue.remove(0);
+            return model;
+        }
+        catch(Exception e)
+        {
+            log.print("fuck");
+            return null;
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     /*Helper Method*/
     public boolean isErrorModelEmpty()
     {
-        return sharedInstance.errorDataQueue.isEmpty();
+        lock.lock();
+        try
+        {
+            return sharedInstance.errorDataQueue.isEmpty();
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     public boolean isRequestModelEmpty()
     {
-        return sharedInstance.requestDataQueue.isEmpty();
+        lock.lock();
+        try
+        {
+            return sharedInstance.requestDataQueue.isEmpty();
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     public boolean isFoundURLModelEmpty()
     {
-        return sharedInstance.foundURLDataQueue.isEmpty();
+        lock.lock();
+        try
+        {
+            return sharedInstance.foundURLDataQueue.isEmpty();
+        }
+        finally
+        {
+            lock.unlock();
+        }
+
     }
 
     public int getPausedThread()

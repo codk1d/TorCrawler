@@ -1,6 +1,8 @@
 package crawler;
 
-public class urlModel
+import java.io.Serializable;
+
+public class urlModel implements Serializable
 {
     private final String parentURL;
     private final String URL;

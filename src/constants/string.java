@@ -23,7 +23,7 @@ public class string
 
     /*Testing Variables*/
     public static String hostError = "none";
-    public static String baseLink = "https://www.google.com/search?source=hp&ei=a6beW8z3EsS6a57nqqgN&q=list+of+all+website+collection&oq=list+of+all+website+collection&gs_l=psy-ab.3...1101.5893.0.6026.31.14.0.0.0.0.594.594.5-1.1.0....0...1c.1.64.psy-ab..30.1.594.0..0j35i39k1.0.1cOyW3GeCB8";
+    public static String baseLink = "https://ahmia.fi/onions/";
 
     /*STATUS CODE*/
     public static int statusCode200 = 200;

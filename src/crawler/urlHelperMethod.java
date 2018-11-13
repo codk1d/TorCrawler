@@ -7,9 +7,9 @@ import constants.string;
 import constants.enumeration;
 import application.helperMethod;
 import constants.preferences;
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.validator.UrlValidator;
 
 public class urlHelperMethod
 {
@@ -32,17 +32,11 @@ public class urlHelperMethod
         }
     }
 
-    public static boolean isUrlValid(String url)
+    public static boolean isUrlValid(String URLLink)
     {
-        try
-        {
-            new URL(url);
-            return true;
-        }
-        catch (MalformedURLException e)
-        {
-            return false;
-        }
+        URLLink = URLLink.replace("onion","com");
+        UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES);
+        return urlValidator.isValid(URLLink);
     }
 
     public static String getUrlHost(String URLLink)
@@ -69,7 +63,7 @@ public class urlHelperMethod
 
     public static String getUrlExtension(String URLLink)
     {
-        if (URLLink.endsWith(".js") || URLLink.endsWith(".jpg") || URLLink.endsWith(".png") || URLLink.endsWith(".svg") || URLLink.endsWith(".ico"))
+        if (URLLink.endsWith(".js") || URLLink.endsWith(".gif") || URLLink.endsWith(".jpg") || URLLink.endsWith(".png") || URLLink.endsWith(".svg") || URLLink.endsWith(".ico"))
         {
             return "image";
         }
@@ -77,7 +71,7 @@ public class urlHelperMethod
         {
             return "doc";
         }
-        else if (URLLink.endsWith(".mp3") || URLLink.endsWith(".avi") || URLLink.endsWith(".webm"))
+        else if (URLLink.endsWith(".mp4") || URLLink.endsWith(".3gp") || URLLink.endsWith(".mp3") || URLLink.endsWith(".avi") || URLLink.endsWith(".webm"))
         {
             return "video";
         }
@@ -87,7 +81,7 @@ public class urlHelperMethod
         }
     }
 
-    public static String createCacheUrl(String URL, String Title, String Description, String datatype, String keyTypes) throws IOException, MalformedURLException, URISyntaxException
+    public static String createCacheUrl(String URL, String Title, String Description, String datatype, String keyTypes,String logo) throws IOException, MalformedURLException, URISyntaxException
     {
         datatype = "all";
         if (Title.equals(""))
@@ -98,7 +92,7 @@ public class urlHelperMethod
         {
             Description = "Description not found";
         }
-        String query = "http://localhost/BoogleSearch/public/update_cache?url=" + URL + "&title=" + Title + "&desc=" + Description + "&type=" + preferences.networkType.toLowerCase() + "&n_type=" + preferences.networkType + "&s_type=" + datatype + "&live_date=" + helperMethod.getCurrentDate() + "&update_date=" + helperMethod.getCurrentDate() + "&key_word=" + keyTypes;
+        String query = "http://localhost/BoogleSearch/public/update_cache?url=" + URL + "&title=" + Title + "&desc=" + Description + "&type=" + preferences.networkType.toLowerCase() + "&n_type=" + preferences.networkType + "&s_type=" + datatype + "&live_date=" + helperMethod.getCurrentDate() + "&update_date=" + helperMethod.getCurrentDate() + "&key_word=" + keyTypes + "&logo=" + logo;
 
         return query;
     }

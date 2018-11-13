@@ -40,6 +40,7 @@ public class webRequestHandler
         }
         else
         {
+            //return requestOnionConnection(url);
             return requestBaseConnection(url);
         }
     }
@@ -47,11 +48,13 @@ public class webRequestHandler
     /*USE ONION PROXY IF ONION URL F OR FASTER REQUEST*/
     public String requestBaseConnection(String url) throws MalformedURLException, IOException, Exception
     {
+
         System.setProperty("http.agent", "Chrome");
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         //connectionList.add(con);
         String html = getContent(con, "Base");
+
         if (!html.contains(".onion") && status.onionFilterStatus)
         {
             throw new Exception("URL is not in onion cluster network");
@@ -64,6 +67,7 @@ public class webRequestHandler
     public String requestOnionConnection(String url) throws MalformedURLException, IOException, Exception
     {
         System.setProperty("http.agent", "Chrome");
+        System.setProperty("http.maxRedirects", "5");
         SocketAddress addr = new InetSocketAddress(string.proxyIP, preferences.proxyPort);
         Proxy proxy = new Proxy(Proxy.Type.SOCKS, addr);
 
@@ -100,8 +104,8 @@ public class webRequestHandler
                 content += scanner.nextLine();
             }
 
+            log.print(networkType + " URL FOUND " + conn.getURL());
             log.logMessage(networkType + " URL FOUND", conn.getURL().getHost() + conn.getURL().getPath(), logType.urlFound);
-            log.print("URL FOUND : " + conn.getURL());
             return content;
         }
         finally
@@ -114,20 +118,17 @@ public class webRequestHandler
     /*UPDATE URL DATABASE*/
     public void updateCache(String url) throws MalformedURLException, IOException, URISyntaxException
     {
-        if (urlHelperMethod.getNetworkType(url).equals(enumeration.UrlTypes.onion) && status.cacheStatus)
-        {
-            url = url.replaceAll(" ", "%20");
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            //connectionList.add(con);
-            con.setRequestMethod("GET");
+        url = url.replaceAll(" ", "%20");
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        //connectionList.add(con);
+        con.setRequestMethod("GET");
 
-            int responseCode = con.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK)
-            {
-                log.logMessage("Cache Error\n" + url, "Server returned response code " + responseCode + " ", logType.error);
-            }
-            //connectionList.remove(con);
+        int responseCode = con.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK)
+        {
+            log.logMessage("Cache Error\n" + url.substring(0,40), "Server returned response code " + responseCode + " ", logType.warning);
         }
+        //connectionList.remove(con);
     }
 }

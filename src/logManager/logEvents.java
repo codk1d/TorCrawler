@@ -32,7 +32,7 @@ public class logEvents
     {
         try
         {
-            helperMethod.writeObjectToFile(view.crawlerObject);
+            //helperMethod.writeObjectToFile(view.crawlerObject);
             view.resetCrawler();
         }
         catch (InstantiationException | ClassNotFoundException | IllegalAccessException | UnsupportedLookAndFeelException ex)
@@ -62,55 +62,63 @@ public class logEvents
         view.jWarningPane.setText("");
         view.crawlerObject.clearQueues();
     }
-    
+
     public void onUpdateLogs()
     {
-        int currentSize = logModel.getInstance().getSize();
-        while (currentSize > 0)
+        new Thread()
         {
-            try
+            @Override
+            public void run()
             {
-                if (!logModel.getInstance().isErrorModelEmpty())
+                int currentSize = logModel.getInstance().getSize();
+                while (currentSize > 0)
                 {
-                    logMessageModel errorModel = logModel.getInstance().logErrorModel();
-                    view.showMessage(errorModel,helperMethod.getErrorMessageType(errorModel.getMessage()));
+                    try
+                    {
+                        if (!logModel.getInstance().isErrorModelEmpty())
+                        {
+                            logMessageModel errorModel = logModel.getInstance().logErrorModel();
+                            view.showMessage(errorModel, helperMethod.getErrorMessageType(errorModel.getMessage()));
+                        }
+                        if (!logModel.getInstance().isRequestModelEmpty())
+                        {
+                            logMessageModel requestModel = logModel.getInstance().getRequestModel();
+                            view.showMessage(requestModel, logType.request);
+                        }
+                        if (!logModel.getInstance().isFoundURLModelEmpty())
+                        {
+                            logMessageModel requestModel = logModel.getInstance().getFoundURLModel();
+                            view.showMessage(requestModel, logType.urlFound);
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.getLogger(logViewController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    catch (BadLocationException ex)
+                    {
+                        Logger.getLogger(logEvents.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    currentSize -= 1;
                 }
-                if (!logModel.getInstance().isRequestModelEmpty())
-                {
-                    logMessageModel requestModel = logModel.getInstance().getRequestModel();
-                    view.showMessage(requestModel,logType.request);
-                }
-                if (!logModel.getInstance().isFoundURLModelEmpty())
-                {
-                    logMessageModel requestModel = logModel.getInstance().getFoundURLModel();
-                    view.showMessage(requestModel,logType.urlFound);
-                }
+                view.pausedThread.setText("  " + logModel.getInstance().getPausedThread());
+                view.runningThread.setText("  " + logModel.getInstance().getRunningThread());
+                view.jCurrentUrlFound.setText("  " + view.crawlerObject.size());
             }
-            catch (IOException ex)
-            {
-                Logger.getLogger(logViewController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            catch (BadLocationException ex)
-            {
-                Logger.getLogger(logEvents.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            currentSize -= 1;
-        }
-        view.pausedThread.setText("  " + logModel.getInstance().getPausedThread());
-        view.runningThread.setText("  " + logModel.getInstance().getRunningThread());
+        }.start();
     }
-    
+
     public void onPauseCrawler()
     {
         status.appStatus = enumeration.appStatus.paused;
         view.jStartBtn.setBackground(new Color(240, 240, 240));
         view.jPauseBtn.setBackground(Color.green);
     }
-    
+
     public void onStartCrawler()
     {
         status.appStatus = enumeration.appStatus.running;
         view.jPauseBtn.setBackground(new Color(240, 240, 240));
         view.jStartBtn.setBackground(Color.green);
-    }    
+    }
 }

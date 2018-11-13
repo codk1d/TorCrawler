@@ -11,8 +11,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class helperMethod
 {
@@ -34,7 +42,7 @@ public class helperMethod
         return date.toString();
     }
 
-    public static Point centreDimension(int frameWidth,int frameHeight)
+    public static Point centreDimension(int frameWidth, int frameHeight)
     {
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         Point position = new Point();
@@ -43,11 +51,18 @@ public class helperMethod
         return position;
     }
 
-    public static void writeObjectToFile(Object serObj)
+    public static String getCurrentDateTime()
+    {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+        Date date = new Date();
+        return dateFormat.format(date);
+    }
+
+    public static void writeObjectToFile(Object serObj, String address)
     {
         try
         {
-            FileOutputStream fileOut = new FileOutputStream(preferences.filepath_queue_manager);
+            FileOutputStream fileOut = new FileOutputStream(address);
             ObjectOutputStream objectOut;
             objectOut = new ObjectOutputStream(fileOut);
             objectOut.writeObject(serObj);
@@ -60,6 +75,20 @@ public class helperMethod
         }
     }
 
+    public static int getFileCount(String path)
+    {
+        int count = 0;
+        try (Stream<Path> files = Files.list(Paths.get(path)))
+        {
+            count = (int) files.count();
+        }
+        catch (IOException ex)
+        {
+            Logger.getLogger(helperMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return count;
+    }
+
     public static Object readObjectFromFile()
     {
 
@@ -69,6 +98,7 @@ public class helperMethod
             {
                 return null;
             }
+
             FileInputStream fileIn = new FileInputStream(preferences.filepath_queue_manager);
             ObjectInputStream objectIn;
             objectIn = new ObjectInputStream(fileIn);
@@ -98,4 +128,24 @@ public class helperMethod
         }
     }
 
+    public static Date addDays(Date date, int days)
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, days); //minus number would decrement the days
+        return cal.getTime();
+    }
+
+    public static boolean isDeadlinePassed(Date date)
+    {
+        Date cDate = new Date();
+        if (cDate.after(date))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }

@@ -19,7 +19,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import constants.string;
 import java.util.ArrayList;
-import logManager.log;
 
 public class nlpParser
 {
@@ -66,25 +65,49 @@ public class nlpParser
     /*THE FOLLOWNG URL FOUNDS URL EMBEDED IN TEXT OR CONTENT OF PAGE*/
     public static ArrayList<String> extractAndSaveUrlsFromContent(String HTML, String host) throws MalformedURLException, IOException, URISyntaxException, Exception
     {
-        Document doc = Jsoup.connect(host).get();
+        Document doc = Jsoup.parse(HTML);
         ArrayList<String> urlListFiltered = new ArrayList<String>();
 
         Elements links = doc.select("a[href]");
 
-        for (Element link : links)
+        for (int counter = 0; counter <= links.size() - 1; counter++)
         {
-            String URLLink = link.absUrl("href");
-            if (urlHelperMethod.isUrlValid(URLLink))
+            String URLLink = links.get(counter).absUrl("href");
+
+            if (URLLink.length() > 1 && URLLink.charAt(0) == '/' && URLLink.charAt(1) == '/')
+            {
+                URLLink = "http:" + URLLink;
+            }
+
+            else if (URLLink.indexOf("http") != 0)
+            {
+                URLLink = "http://" + URLLink;
+            }
+
+            if (urlHelperMethod.isUrlValid(URLLink) && (URLLink.contains(".onion") || !urlHelperMethod.getUrlExtension(URLLink).equals("link")))
             {
                 urlListFiltered.add(URLLink);
             }
+        }
+
+        links = doc.select("img[src]");
+        for (int counter = 0; counter <= links.size() - 1; counter++)
+        {
+            String URLLink = links.get(counter).attr("abs:src");
+
             if (URLLink.length() > 1 && URLLink.charAt(0) == '/' && URLLink.charAt(1) == '/')
             {
-                URLLink = "http://" + URLLink.substring(2);
+                URLLink = "http:" + URLLink;
             }
+
+            else if (URLLink.indexOf("http") != 0)
+            {
+                URLLink = "http://" + URLLink;
+            }
+
             urlListFiltered.add(URLLink);
         }
-        
+
         String html = doc.body().text();
         String[] urlList = html.split(" ");
 
@@ -92,15 +115,66 @@ public class nlpParser
         {
             if (URLLink.length() > 1 && URLLink.charAt(0) == '/' && URLLink.charAt(1) == '/')
             {
-                URLLink = "http://" + URLLink.substring(2);
+                URLLink = "http:" + URLLink;
             }
 
-            if (urlHelperMethod.isUrlValid(URLLink))
+            else if (URLLink.indexOf("http") != 0)
+            {
+                URLLink = "http://" + URLLink;
+            }
+
+            if (urlHelperMethod.isUrlValid(URLLink) && (URLLink.contains(".onion") || !urlHelperMethod.getUrlExtension(URLLink).equals("link")))
             {
                 urlListFiltered.add(URLLink);
             }
         }
-        
+
+        String htmlUnspaced = HTML.replaceAll(" ", "");
+        String currentToken = "";
+        String currentUrl = "";
+        boolean urlFound = false;
+
+        for (int counter = 0; counter < htmlUnspaced.length(); counter++)
+        {
+            if (urlFound)
+            {
+                if (htmlUnspaced.charAt(counter) == ')')
+                {
+                    String linkType = urlHelperMethod.getUrlExtension(currentUrl);
+                    if (!linkType.contains(host))
+                    {
+                        currentUrl = urlHelperMethod.getUrlHost(host) + "/" + currentUrl;
+                    }
+                    if (linkType.equals("image"))
+                    {
+                        urlListFiltered.add(currentUrl);
+                    }
+                    currentToken = "";
+                    currentUrl = "";
+                    urlFound = false;
+                }
+                else
+                {
+                    currentUrl += htmlUnspaced.charAt(counter);
+                }
+            }
+            else if ("background-image:url".equals(currentToken))
+            {
+                urlFound = true;
+                continue;
+            }
+            else if ("background-image:url(".contains(htmlUnspaced.charAt(counter) + ""))
+            {
+                currentToken += htmlUnspaced.charAt(counter);
+            }
+            else
+            {
+                currentToken = "";
+                currentUrl = "";
+                urlFound = false;
+            }
+        }
+
         return urlListFiltered;
     }
 
@@ -108,6 +182,23 @@ public class nlpParser
     {
         nlpParser parser = new nlpParser();
         return parser.parserAction(doc);
+    }
+
+    public static String extractLogo(String HTML)
+    {
+        String logoUrl = "";
+        Document document = Jsoup.parse(HTML);
+        
+        Element element = document.head().select("link[href~=.*\\.(ico|png)]").first();
+
+        if(element==null)
+        {
+            return "";
+        }
+        else
+        {
+            return element.attr("href");
+        }
     }
 
     public static String extractTitle(String HTML)

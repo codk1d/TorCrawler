@@ -1,9 +1,10 @@
 package crawler;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class duplicationFilter
+public class duplicationFilter implements Serializable
 {
 
     /*PRIVATE VARIABLES*/

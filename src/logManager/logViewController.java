@@ -41,7 +41,31 @@ public class logViewController extends javax.swing.JFrame
     {
         initializeStyle();
         initializeDefaultText();
+        initializeLoggingThread();
         eventManager.Initialize(this);
+    }
+
+    public void initializeLoggingThread()
+    {
+        new Thread()
+        {
+            @Override
+            public void run()
+            {
+                while (true)
+                {
+                    try
+                    {
+                        jUpdateLogBtnHidden.doClick();
+                        sleep(1000);
+                    }
+                    catch (InterruptedException ex)
+                    {
+                        Logger.getLogger(logViewController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }.start();
     }
 
     public void initializeStyle()
@@ -72,15 +96,13 @@ public class logViewController extends javax.swing.JFrame
     {
         jThread.setText("  " + preferences.maxThreadCount);
         jDefaultLink.setText("  " + string.baseLink);
-        jCurrentNetwork.setText("  " + preferences.networkType);
+        jCurrentUrlFound.setText("  " + preferences.networkType);
         jStatus.setText("  " + status.appStatus);
-        jMaxThread.setText("  " + preferences.maxUrlDepth);
 
         jThread.setToolTipText("Max Thread Count : " + preferences.maxThreadCount);
         jDefaultLink.setToolTipText("Base Link : " + string.baseLink);
-        jCurrentNetwork.setToolTipText("Network Type : " + preferences.networkType);
+        jCurrentUrlFound.setToolTipText("Network Type : " + preferences.networkType);
         jStatus.setToolTipText("App Status : " + status.appStatus);
-        jMaxThread.setToolTipText("Max Url Depth : " + preferences.maxUrlDepth);
     }
 
     @SuppressWarnings("unchecked")
@@ -113,7 +135,7 @@ public class logViewController extends javax.swing.JFrame
         jStatusLbl = new javax.swing.JLabel();
         jThread = new javax.swing.JLabel();
         pausedThread = new javax.swing.JLabel();
-        jCurrentNetwork = new javax.swing.JLabel();
+        jCurrentUrlFound = new javax.swing.JLabel();
         runningThread = new javax.swing.JLabel();
         jStatus = new javax.swing.JLabel();
         jMaxUrlThreadLbl = new javax.swing.JLabel();
@@ -128,6 +150,7 @@ public class logViewController extends javax.swing.JFrame
         jUrlFoundPane = new javax.swing.JTextPane();
         jWarningPaneScroller = new javax.swing.JScrollPane();
         jWarningPane = new javax.swing.JTextPane();
+        jUpdateLogBtnHidden = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -293,7 +316,7 @@ public class logViewController extends javax.swing.JFrame
         jCurrentNetworkLbl.setBackground(javax.swing.UIManager.getDefaults().getColor("FormattedTextField.selectionBackground"));
         jCurrentNetworkLbl.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jCurrentNetworkLbl.setForeground(new java.awt.Color(255, 255, 255));
-        jCurrentNetworkLbl.setText("  Current Network   ");
+        jCurrentNetworkLbl.setText("  URL Found");
         jCurrentNetworkLbl.setOpaque(true);
         jCurrentNetworkLbl.setPreferredSize(new java.awt.Dimension(0, 22));
 
@@ -327,11 +350,11 @@ public class logViewController extends javax.swing.JFrame
         pausedThread.setOpaque(true);
         pausedThread.setPreferredSize(new java.awt.Dimension(0, 22));
 
-        jCurrentNetwork.setBackground(new java.awt.Color(245, 241, 241));
-        jCurrentNetwork.setText("  onion");
-        jCurrentNetwork.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(222, 222, 222), 1, true));
-        jCurrentNetwork.setOpaque(true);
-        jCurrentNetwork.setPreferredSize(new java.awt.Dimension(0, 22));
+        jCurrentUrlFound.setBackground(new java.awt.Color(245, 241, 241));
+        jCurrentUrlFound.setText("  0");
+        jCurrentUrlFound.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(222, 222, 222), 1, true));
+        jCurrentUrlFound.setOpaque(true);
+        jCurrentUrlFound.setPreferredSize(new java.awt.Dimension(0, 22));
 
         runningThread.setBackground(new java.awt.Color(245, 241, 241));
         runningThread.setText("  0");
@@ -395,7 +418,7 @@ public class logViewController extends javax.swing.JFrame
                                 .addGroup(jPropertiesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(jThread, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
                                     .addComponent(pausedThread, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jCurrentNetwork, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(jCurrentUrlFound, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
                                 .addGroup(jPropertiesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(jRunningThreadLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -435,7 +458,7 @@ public class logViewController extends javax.swing.JFrame
                             .addComponent(jCurrentNetworkLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPropertiesPaneLayout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCurrentNetwork, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(jCurrentUrlFound, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPropertiesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jDefaultLinkLbl, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
@@ -457,6 +480,15 @@ public class logViewController extends javax.swing.JFrame
 
         jWarningPane.setMaximumSize(new java.awt.Dimension(6, 6));
         jWarningPaneScroller.setViewportView(jWarningPane);
+
+        jUpdateLogBtnHidden.setText("Update Logs");
+        jUpdateLogBtnHidden.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jUpdateLogBtnHiddenActionPerformed(evt);
+            }
+        });
 
         jMenu1.setText("File");
 
@@ -490,7 +522,10 @@ public class logViewController extends javax.swing.JFrame
                                 .addComponent(jClearBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jRestartBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jBackupBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
-                                .addComponent(jUpdateLogBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .addComponent(jUpdateLogBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jUpdateLogBtnHidden, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(0, 0, Short.MAX_VALUE)))))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -532,6 +567,7 @@ public class logViewController extends javax.swing.JFrame
                                 .addGap(2, 2, 2))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jSystemProgressPaneScroller, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jPreferenceBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(6, 6, 6)
@@ -541,8 +577,9 @@ public class logViewController extends javax.swing.JFrame
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jClearBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jUpdateLogBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jSystemProgressPaneScroller, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(jUpdateLogBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(159, 159, 159)
+                                        .addComponent(jUpdateLogBtnHidden, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(3, 3, 3)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -606,6 +643,11 @@ public class logViewController extends javax.swing.JFrame
         // TODO add your handling code here:
     }//GEN-LAST:event_jPreferenceBtnActionPerformed
 
+    private void jUpdateLogBtnHiddenActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jUpdateLogBtnHiddenActionPerformed
+    {//GEN-HEADEREND:event_jUpdateLogBtnHiddenActionPerformed
+        eventManager.onUpdateLogs();
+    }//GEN-LAST:event_jUpdateLogBtnHiddenActionPerformed
+
     /*Helper Method*/
     public String createMessage(String color, String message, String type)
     {
@@ -628,19 +670,19 @@ public class logViewController extends javax.swing.JFrame
             {
                 case urlFound:
                     doc = (HTMLDocument) jUrlFoundPane.getStyledDocument();
-                    message = createMessage("green", model.getMessageType(),model.getMessage());
+                    message = createMessage("green", model.getMessageType(), model.getMessage());
                     break;
                 case request:
                     doc = (HTMLDocument) jSystemProgressPane.getStyledDocument();
-                    message = createMessage("green", model.getMessageType(),model.getMessage());
+                    message = createMessage("green", model.getMessageType(), model.getMessage());
                     break;
                 case warning:
                     doc = (HTMLDocument) jWarningPane.getStyledDocument();
-                    message = createMessage("#ffa64d",model.getMessageType(), "Warning" + model.getMessage());
+                    message = createMessage("#ffa64d", model.getMessageType(), "Warning" + model.getMessage());
                     break;
                 case error:
                     doc = (HTMLDocument) jServerErrorPane.getStyledDocument();
-                    message = createMessage("red", model.getMessageType(),"Error" + model.getMessage());
+                    message = createMessage("red", model.getMessageType(), "Error" + model.getMessage());
                     break;
                 default:
                     break;
@@ -677,7 +719,7 @@ public class logViewController extends javax.swing.JFrame
                 logViewController crawler = new logViewController();
                 crawler.crawlerObject = crawlerObject;
                 crawler.setVisible(true);
-                Point point = helperMethod.centreDimension(crawler.getSize().width,crawler.getSize().height);
+                Point point = helperMethod.centreDimension(crawler.getSize().width, crawler.getSize().height);
                 crawler.setLocation(point);
                 crawler.getContentPane().setBackground(new Color(249, 248, 248));
 
@@ -693,8 +735,8 @@ public class logViewController extends javax.swing.JFrame
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton jBackupBtn;
     public javax.swing.JButton jClearBtn;
-    public javax.swing.JLabel jCurrentNetwork;
     public javax.swing.JLabel jCurrentNetworkLbl;
+    public javax.swing.JLabel jCurrentUrlFound;
     public javax.swing.JLabel jDefaultLink;
     public javax.swing.JLabel jDefaultLinkLbl;
     public javax.swing.JLabel jMaxThread;
@@ -727,6 +769,7 @@ public class logViewController extends javax.swing.JFrame
     public javax.swing.JLabel jThread;
     public javax.swing.JLabel jThreadCountLbl;
     public javax.swing.JButton jUpdateLogBtn;
+    public javax.swing.JButton jUpdateLogBtnHidden;
     public javax.swing.JLabel jUrlFoundLbl;
     public javax.swing.JTextPane jUrlFoundPane;
     public javax.swing.JScrollPane jUrlFoundPaneScroller;

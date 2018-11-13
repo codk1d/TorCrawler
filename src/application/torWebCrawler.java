@@ -7,9 +7,11 @@ import constants.preferences;
 import constants.status;
 import constants.string;
 import crawler.crawler;
+import crawler.retryModel;
 import crawler.urlModel;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +22,7 @@ public class torWebCrawler
     /*INSTANCES DECLARATIONS PRIVATE*/
     private final ArrayList<Thread> pausedThreadQueue = new ArrayList<Thread>();
     private final ArrayList<Thread> runningThreadQueue = new ArrayList<Thread>();
-    private ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
 
     private crawler htmlParser;
     private int threadCount = 0;
@@ -38,6 +40,11 @@ public class torWebCrawler
         {
             htmlParser = new crawler();
         }
+        else
+        {
+            htmlParser = tempCrawler;
+        }
+        backupManager();
     }
 
     /*CRAWLER INITIALIZATION*/
@@ -90,6 +97,32 @@ public class torWebCrawler
         }
     }
 
+    public void backupManager()
+    {
+        new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    while (true)
+                    {
+                        sleep(preferences.backupTimer);
+                        //crawler parser = (crawler) SerializationUtils.clone(htmlParser);
+                        //helperMethod.writeObjectToFile(parser,preferences.filepath_queue_manager);
+                        //helperMethod.writeObjectToFile(parser,preferences.filepath_queue_manager_backup+"_"+helperMethod.getCurrentDateTime());
+                    }
+                }
+                catch (InterruptedException ex)
+                {
+                    Logger.getLogger(torWebCrawler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+        }.start();
+    }
+
     public void threadManager()
     {
         new Thread()
@@ -114,9 +147,14 @@ public class torWebCrawler
                             }
                         }
                         log.logThreadCount(runningThreadQueue.size());
-                        sleep(1000);
+                        if (status.appStatus == enumeration.appStatus.running)
+                        {
+                            htmlParser.validateRetryUrl();
+                        }
+                        sleep(preferences.requestTimeGap);
+                        //log.print(counterRequest+"");
                     }
-                    catch (InterruptedException ex)
+                    catch (InterruptedException | IOException ex)
                     {
                         Logger.getLogger(torWebCrawler.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -125,6 +163,7 @@ public class torWebCrawler
         }.start();
     }
 
+    int counterRequest = 0;
     public void createCrawler() throws IOException, InterruptedException
     {
         String threadName = "Thread:" + threadCount;
@@ -145,11 +184,13 @@ public class torWebCrawler
                         {
                             if (!htmlParser.isHostEmpty(host))
                             {
+                                counterRequest++;
                                 urlmodel = htmlParser.getUrl(host);
                                 url = urlmodel.getURL();
                                 log.logMessage(threadName + " : URL REQUEST", url, enumeration.logType.request);
                                 String html = webRequestHandler.getInstance().requestConnection(url);
                                 htmlParser.parse_html(html, url);
+                                counterRequest--;
                             }
                             else
                             {
@@ -181,19 +222,19 @@ public class torWebCrawler
                     }
                     catch (Exception ex)
                     {
-                        //log.print("Error : " , ex);
+                        counterRequest--;
+                        log.print("Error : " + host + " " + ex);
                         if (urlmodel != null)
                         {
                             log.logMessage("Server Error", ex.toString() + "<br> &nbsp &nbsp &nbsp &nbsp Parent URL:" + urlmodel.getParentURL() + "<br> &nbsp &nbsp &nbsp &nbsp Complete URL : " + url, enumeration.logType.error);
+                            htmlParser.addToRetryQueue(new retryModel(urlmodel.getParentURL(), urlmodel.getURL()));
                         }
                         else
                         {
                             log.logMessage("Server Error", ex.toString() + "<br> &nbsp &nbsp &nbsp &nbsp Host:" + host + "<br> &nbsp &nbsp &nbsp &nbsp Complete URL : " + url, enumeration.logType.warning);
                         }
                     }
-
                 }
-
             }
         };
         runningThreadQueue.add(thread);

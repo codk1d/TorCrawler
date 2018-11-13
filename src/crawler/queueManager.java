@@ -1,14 +1,17 @@
 package crawler;
 
+import application.helperMethod;
 import constants.enumeration;
 import constants.string;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+import logManager.log;
 
-public class queueManager
+public class queueManager implements Serializable
 {
 
     /*URL QUEUES*/
@@ -16,15 +19,17 @@ public class queueManager
     private HashMap<String, Queue<urlModel>> onionDataQueues;
     private HashMap<String, Queue<urlModel>> baseQueues;
     private HashMap<String, Queue<urlModel>> parsingQueues;
+    private HashMap<String, retryModel> retryQueues;
 
     /*URL QUEUES KEYS*/
     private ArrayList<String> onionQueuesKeys;
     private ArrayList<String> onionDataQueuesKeys;
     private ArrayList<String> baseQueuesKeys;
+    private ArrayList<String> retryQueuesKeys;
 
     /*VARIABLE INITIALIZATION*/
 
-    /*INITIALIZATIONS*/
+ /*INITIALIZATIONS*/
     public queueManager() throws IOException
     {
         variable_initalization();
@@ -36,12 +41,14 @@ public class queueManager
         onionDataQueues = new HashMap<String, Queue<urlModel>>();
         baseQueues = new HashMap<String, Queue<urlModel>>();
         parsingQueues = new HashMap<String, Queue<urlModel>>();
+        retryQueues = new HashMap<String, retryModel>();
 
         onionQueuesKeys = new ArrayList<String>();
         onionDataQueuesKeys = new ArrayList<String>();
         baseQueuesKeys = new ArrayList<String>();
+        retryQueuesKeys = new ArrayList<String>();
 
-        setUrl(string.baseLink,"");
+        setUrl(string.baseLink, "");
     }
 
     public boolean isHostEmpty(String host)
@@ -53,7 +60,7 @@ public class queueManager
     {
         return parsingQueues.size() + onionQueues.size() + onionDataQueues.size() + baseQueues.size();
     }
-    
+
     public void clearQueues()
     {
         onionQueues.clear();
@@ -64,7 +71,6 @@ public class queueManager
         onionDataQueuesKeys.clear();
         baseQueuesKeys.clear();
     }
-
 
     public boolean isUrlPresent()
     {
@@ -123,7 +129,7 @@ public class queueManager
                     parentURL = tempModel.getParentURL();
                     removeHostIfParsed(parsingQueues, host);
                 }
-                return new urlModel(parentURL,host + URL);
+                return new urlModel(parentURL, host + URL);
             }
         }
         catch (Exception ex)
@@ -147,32 +153,65 @@ public class queueManager
         queue.remove(host);
     }
 
-    public void addToQueue(HashMap<String, Queue<urlModel>> priorityQueue, String host, String subUrl,String parentURL)
+    public void addToQueue(HashMap<String, Queue<urlModel>> priorityQueue, String host, String subUrl, String parentURL)
     {
         subUrl = subUrl + " ";
         if (priorityQueue.containsKey(host))
         {
             priorityQueue.get(host).clear();
-            priorityQueue.get(host).add(new urlModel(parentURL,subUrl));
+            priorityQueue.get(host).add(new urlModel(parentURL, subUrl));
         }
         else
         {
             if (parsingQueues.containsKey(host))
             {
                 parsingQueues.get(host).clear();
-                parsingQueues.get(host).add(new urlModel(parentURL,subUrl));
+                parsingQueues.get(host).add(new urlModel(parentURL, subUrl));
             }
             else
             {
                 Queue<urlModel> tempList = new LinkedList();
-                tempList.add(new urlModel(parentURL,subUrl));
+                tempList.add(new urlModel(parentURL, subUrl));
                 priorityQueue.put(host, tempList);
             }
         }
     }
 
+    public void validateRetryUrl() throws IOException
+    {
+
+        try
+        {
+            if (retryQueuesKeys.size() > 0)
+            {
+                retryModel rmodel = retryQueues.get(retryQueuesKeys.get(0));
+                if (helperMethod.isDeadlinePassed(rmodel.getDate()) && !onionQueues.containsKey(rmodel.getURL()) && !baseQueues.containsKey(rmodel.getURL()) && !parsingQueues.containsKey(rmodel.getURL()) && !onionDataQueues.containsKey(rmodel.getURL()))
+                {
+                    rmodel.updateRetryModel();
+
+                    if (rmodel.getRetryCount() <= 0)
+                    {
+                        retryQueuesKeys.remove(0);
+                        retryQueues.remove(rmodel.getURL());
+                    }
+                    else
+                    {
+                        retryQueuesKeys.remove(0);
+                        retryQueuesKeys.add(rmodel.getURL());
+                        setUrl(rmodel.getURL(), rmodel.getParentURL());
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            log.print(ex.getMessage(),ex);
+        }
+
+    }
+
     /*CHECK URL DEPTH TO LIMIT TREE HEIGHT SO THAT CRAWLER DOENST DIVERT INTO URLS THAT DONT CONTAIN INFORMATION REGARDING ONION LINKS*/
-    public void setUrl(String URLLink,String parentURL) throws IOException
+    public void setUrl(String URLLink, String parentURL) throws IOException
     {
         enumeration.UrlTypes type = urlHelperMethod.getNetworkType(URLLink);
 
@@ -181,7 +220,7 @@ public class queueManager
 
         if (type == enumeration.UrlTypes.onion)
         {
-            addToQueue(onionQueues, host, subUrl,parentURL);
+            addToQueue(onionQueues, host, subUrl, parentURL);
             if (!onionQueuesKeys.contains(host) && !parsingQueues.containsKey(host))
             {
                 onionQueuesKeys.add(host);
@@ -189,7 +228,7 @@ public class queueManager
         }
         else if (type == enumeration.UrlTypes.base && URLLink.contains("onion"))
         {
-            addToQueue(onionDataQueues, host, subUrl,parentURL);
+            addToQueue(onionDataQueues, host, subUrl, parentURL);
             if (!onionDataQueuesKeys.contains(host) && !parsingQueues.containsKey(host))
             {
                 onionDataQueuesKeys.add(host);
@@ -197,11 +236,30 @@ public class queueManager
         }
         else
         {
-            addToQueue(baseQueues, host, subUrl,parentURL);
+            addToQueue(baseQueues, host, subUrl, parentURL);
             if (!baseQueuesKeys.contains(host) && !parsingQueues.containsKey(host))
             {
                 baseQueuesKeys.add(host);
             }
         }
     }
+
+    public void addToRetryQueue(retryModel rmodel)
+    {
+        if (!retryQueues.containsKey(rmodel.getURL()))
+        {
+            retryQueues.put(rmodel.getURL(), rmodel);
+            retryQueuesKeys.add(rmodel.getURL());
+        }
+    }
+
+    public void removeFromRetryQueues(String url)
+    {
+        if (!retryQueues.containsKey(url))
+        {
+            retryQueues.remove(url);
+            retryQueuesKeys.remove(url);
+        }
+    }
+
 }

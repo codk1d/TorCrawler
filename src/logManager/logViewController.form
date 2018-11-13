@@ -103,6 +103,10 @@
                               <Component id="jRestartBtn" alignment="1" max="32767" attributes="0"/>
                               <Component id="jBackupBtn" alignment="1" pref="118" max="32767" attributes="0"/>
                               <Component id="jUpdateLogBtn" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="jUpdateLogBtnHidden" min="-2" pref="0" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
                   </Group>
@@ -159,7 +163,8 @@
                           </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
+                                  <Component id="jSystemProgressPaneScroller" min="-2" pref="490" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
                                       <Component id="jPreferenceBtn" min="-2" pref="36" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                                       <Component id="jBackupBtn" min="-2" pref="35" max="-2" attributes="0"/>
@@ -169,8 +174,9 @@
                                       <Component id="jClearBtn" min="-2" pref="35" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jUpdateLogBtn" min="-2" pref="35" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="159" max="-2" attributes="0"/>
+                                      <Component id="jUpdateLogBtnHidden" min="-2" pref="35" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="jSystemProgressPaneScroller" min="-2" pref="490" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
                           </Group>
@@ -364,7 +370,7 @@
                                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                       <Component id="jThread" pref="86" max="32767" attributes="0"/>
                                       <Component id="pausedThread" alignment="1" max="32767" attributes="0"/>
-                                      <Component id="jCurrentNetwork" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="jCurrentUrlFound" alignment="1" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -418,7 +424,7 @@
                       </Group>
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jCurrentNetwork" max="32767" attributes="0"/>
+                          <Component id="jCurrentUrlFound" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -493,7 +499,7 @@
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="ff" green="ff" red="ff" type="rgb"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="  Current Network   "/>
+            <Property name="text" type="java.lang.String" value="  URL Found"/>
             <Property name="opaque" type="boolean" value="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[0, 22]"/>
@@ -586,12 +592,12 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jCurrentNetwork">
+        <Component class="javax.swing.JLabel" name="jCurrentUrlFound">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="f1" green="f1" red="f5" type="rgb"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="  onion"/>
+            <Property name="text" type="java.lang.String" value="  0"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
                 <LineBorder roundedCorners="true">
@@ -798,5 +804,13 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JButton" name="jUpdateLogBtnHidden">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Update Logs"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jUpdateLogBtnHiddenActionPerformed"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

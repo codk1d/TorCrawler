@@ -3,6 +3,7 @@ package application;
 import logManager.logViewController;
 import logManager.log;
 import constants.preferences;
+import crawler.urlHelperMethod;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.logging.Level;
@@ -18,8 +19,7 @@ public class applicationController
     /*TRIGGER CRAWLER*/
     public static void main(String[] args) throws InterruptedException, IOException, InstantiationException, InstantiationException, ParseException, ClassNotFoundException, IllegalAccessException, IllegalAccessException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException, UnsupportedLookAndFeelException
     {
-
-        try
+       try
         {
             if (torRequestHandler == null)
             {
