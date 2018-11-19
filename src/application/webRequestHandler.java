@@ -55,9 +55,9 @@ public class webRequestHandler
         //connectionList.add(con);
         String html = getContent(con, "Base");
 
-        if (!html.contains(".onion") && status.onionFilterStatus)
+        if (!html.contains(string.typeOnion) && status.onionFilterStatus)
         {
-            throw new Exception("URL is not in onion cluster network");
+            throw new Exception("URL is not in "+string.textOnion+" cluster network");
         }
         //connectionList.remove(con);
         return html;
@@ -74,7 +74,7 @@ public class webRequestHandler
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection(proxy);
         //connectionList.add(con);
-        String content = getContent(con, "Onion");
+        String content = getContent(con, string.textOnion);
         //connectionList.remove(con);
 
         return content;

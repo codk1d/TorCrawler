@@ -4,7 +4,7 @@ public class preferences
 {
     /*Crawler Preferences*/
     public static int proxyPort = 9150;
-    public static int maxThreadCount = 30;
+    public static int maxThreadCount = 20;
     public static int requestTimeGap = 1000;
     public static int internetConsumption = 10;
 

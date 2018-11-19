@@ -226,7 +226,7 @@ public class queueManager implements Serializable
                 onionQueuesKeys.add(host);
             }
         }
-        else if (type == enumeration.UrlTypes.base && URLLink.contains("onion"))
+        else if (type == enumeration.UrlTypes.base && URLLink.contains(string.textOnion))
         {
             addToQueue(onionDataQueues, host, subUrl, parentURL);
             if (!onionDataQueuesKeys.contains(host) && !parsingQueues.containsKey(host))

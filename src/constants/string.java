@@ -30,4 +30,5 @@ public class string
 
     /*Variable Types*/
     public static String typeOnion = ".onion";
+    public static String textOnion = "onion";
 }

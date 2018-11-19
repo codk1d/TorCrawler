@@ -34,7 +34,7 @@ public class urlHelperMethod
 
     public static boolean isUrlValid(String URLLink)
     {
-        URLLink = URLLink.replace("onion","com");
+        URLLink = URLLink.replace(string.textOnion,"com");
         UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES);
         return urlValidator.isValid(URLLink);
     }
